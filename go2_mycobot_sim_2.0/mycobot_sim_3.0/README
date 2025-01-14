@@ -1,0 +1,3 @@
+
+roslaunch realsense_ros_gazebo simulation.launch
+rosrun mycobot_moveit_py_launch launch.py

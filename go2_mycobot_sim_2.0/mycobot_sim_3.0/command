@@ -1,0 +1,14 @@
+nano /var/log/apt/history.log
+
+要安的几个依赖：
+sudo apt-get install ros-noetic-moveit
+sudo apt-get install ros-noetic-ros-controllers
+sudo apt-get install ros-noetic-gazebo-ros-pkgs ros-noetic-gazebo-ros-control
+apt-get install ros-noetic-moveit-visual-tools
+sudo apt-get install python-is-python3
+sudo apt-get install ros-noetic-cv-bridge
+sudo apt-get install python3-opencv
+pip3 install numpy
+
+注意事项：
+一定要先运行相机例程一次激活话题发布！gazebo_camera_sim

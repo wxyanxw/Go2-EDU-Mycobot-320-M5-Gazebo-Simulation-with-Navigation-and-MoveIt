@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<launch>
+    <arg name="wname" default="lift"/>
+    
+
+  <!-- Start Gazebo paused to allow the controllers to pickup the initial pose -->
+  <include file="$(find gazebo_ros)/launch/empty_world.launch" pass_all_args="true">
+    <arg name="world_name" value="$(find unitree_move_base)/worlds/$(arg wname).world"/>
+
+  </include>
+
+
+</launch>

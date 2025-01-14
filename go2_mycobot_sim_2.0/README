@@ -1,0 +1,8 @@
+roslaunch mycobot_moveit_config demo_gazebo.launch 
+sudo su
+source /home/u20/catkin_ws/devel/setup.bash 
+rosrun unitree_guide junior_ctrl
+roslaunch unitree_move_base rvizMoveBase.launch
+rosrun mycobot_moveit_py_crtl mycobot_moveit_py_search.py 
+
+2.0版本新增filter和新动作

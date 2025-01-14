@@ -1,0 +1,80 @@
+<?xml version="1.0"?>
+<launch>
+    <arg name="wname" default="lift"/>
+    <arg name="rname" default="go1"/>
+    <arg name="robot_path" value="(find $(arg rname)_description)"/>
+    <arg name="dollar" value="$"/>
+
+    <arg name="use_sim_time" default="true"/>
+    <arg name="gui" default="true"/>
+    <arg name="headless" default="false"/>
+    <arg name="debug" default="false"/>
+    <!-- Debug mode will hung up the robot, use "true" or "false" to switch it. -->
+    <arg name="user_debug" default="false"/>
+    
+  <!-- Gazebo options -->
+  <arg name="gazebo_gui" default="true" doc="Start Gazebo GUI"/>
+  <arg name="paused" default="false" doc="Start Gazebo paused"/>
+  <arg name="world_name" default="worlds/empty.world" doc="Gazebo world file"/>
+  <arg name="world_pose" default="-x 0 -y 0 -z 0 -R 0 -P 0 -Y 0" doc="Pose to spawn the robot at"/>
+  <arg name="initial_joint_positions" default=" -J joint2_to_joint1 0 -J joint3_to_joint2 0 -J joint4_to_joint3 0 -J joint5_to_joint4 0 -J joint6_to_joint5 0 -J joint6output_to_joint6 0" doc="Initial joint configuration of the robot"/>
+
+  <!-- Start Gazebo paused to allow the controllers to pickup the initial pose -->
+  <include file="$(find gazebo_ros)/launch/empty_world.launch" pass_all_args="true">
+    <arg name="world_name" value="$(find unitree_move_base)/worlds/$(arg wname).world"/>
+    <arg name="debug" value="$(arg debug)"/>
+    <arg name="gui" value="$(arg gui)"/>
+    <arg name="paused" value="$(arg paused)"/>
+    <arg name="use_sim_time" value="$(arg use_sim_time)"/>
+    <arg name="headless" value="$(arg headless)"/>
+  </include>
+
+  <!-- Set the robot urdf on the parameter server -->
+  <param name="robot_description" command="$(find xacro)/xacro $(find mycobot_description)/urdf/mycobot_320_pi_2022/new_mycobot_pro_320_pi_moveit_2022.urdf.xacro" />
+
+  <!-- Unpause the simulation after loading the robot model -->
+  <arg name="unpause" value="$(eval '' if arg('paused') else '-unpause')" />
+
+  <!-- Spawn the robot in Gazebo -->
+  <node name="spawn_gazebo_model" pkg="gazebo_ros" type="spawn_model" args="-urdf -z 0.6 -param robot_description -model robot $(arg unpause) $(arg world_pose) $(arg initial_joint_positions)"
+    respawn="false" output="screen" />
+
+  <!-- Load the controller parameters onto the parameter server -->
+  <rosparam file="$(find mycobot_moveit_config)/config/gazebo_controllers.yaml" />
+  <include file="$(dirname)/ros_controllers.launch"/>
+
+  <!-- Spawn the Gazebo ROS controllers -->
+  <node name="gazebo_controller_spawner" pkg="controller_manager" type="spawner" respawn="false" output="screen" args="joint_state_controller" />
+  
+    <!-- convert joint states to TF transforms for rviz, etc -->
+    <node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher"
+          respawn="false" output="screen">
+        <remap from="/joint_states" to="/$(arg rname)_gazebo/joint_states"/>
+    </node>
+  
+    <!-- Load joint controller configurations from YAML file to parameter server -->
+  <rosparam file="$(arg dollar)$(arg robot_path)/config/robot_control.yaml" command="load"/>
+  
+  <node pkg="controller_manager" type="spawner" name="controller_spawner" respawn="false"
+        output="screen" ns="/$(arg rname)_gazebo" args="joint_state_controller
+        FL_hip_controller FL_thigh_controller FL_calf_controller
+        FR_hip_controller FR_thigh_controller FR_calf_controller
+        RL_hip_controller RL_thigh_controller RL_calf_controller
+        RR_hip_controller RR_thigh_controller RR_calf_controller "/>
+
+  <!-- load the parameter unitree_controller -->
+  <include file="$(find unitree_controller)/launch/set_ctrl.launch">
+      <arg name="rname" value="$(arg rname)"/>
+  </include>
+
+    <!-- Run the map server -->
+    <!-- Run the map server -->
+  <node name="map_server" pkg="map_server" type="map_server" args="$(find unitree_guide)/maps/map_2.yaml"/>
+
+  <node pkg="amcl" type="amcl" name="amcl">
+      <param name="update_min_d" value="0.1" />
+      <param name="update_min_a" value="0.3" /> <!-- 30度 -->
+      <param name="odom_model_type" value="omni-corrected" />
+  </node>
+  
+</launch>

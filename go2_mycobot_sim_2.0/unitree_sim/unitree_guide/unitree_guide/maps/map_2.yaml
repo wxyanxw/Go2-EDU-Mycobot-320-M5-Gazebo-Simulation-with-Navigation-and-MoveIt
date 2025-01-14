@@ -1,0 +1,7 @@
+image: /home/u20/catkin_ws/src/go2_mycobot_sim_2.0/unitree_sim/unitree_guide/unitree_guide/maps/map_2.pgm
+resolution: 0.050000
+origin: [-100.000000, -100.000000, 0.000000]
+negate: 0
+occupied_thresh: 0.65
+free_thresh: 0.196
+

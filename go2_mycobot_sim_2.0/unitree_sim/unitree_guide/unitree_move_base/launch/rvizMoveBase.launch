@@ -1,0 +1,16 @@
+<launch>
+
+	<node pkg="laser_filters" type="scan_to_scan_filter_chain" output="screen" name="front_laser">
+		<rosparam command="load" file="$(find laser_filter)/config/angle.yaml" />
+		<remap from="/scan" to="/ori_scan" />
+    	<remap from="/scan_filtered" to="/scan" />
+	</node>
+
+    <!-- move_base -->
+    <include file="$(find unitree_move_base)/launch/move_base.launch"/>
+
+    <!-- rviz -->
+    <node pkg="rviz" type="rviz" name="rviz" args="-d $(find unitree_move_base)/config/move_base.rviz"/>
+
+
+</launch>

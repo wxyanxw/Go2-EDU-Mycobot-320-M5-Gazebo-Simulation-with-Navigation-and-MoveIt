@@ -1,0 +1,6 @@
+scan_filter_chain:
+- name: angle
+  type: laser_filters/LaserScanAngularBoundsFilterInPlace
+  params: {lower_angle: 2.26, upper_angle: 4.01} # filter -143 ~ 143deg
+  input_topic: /ori_scan
+  output_topic: /scan
